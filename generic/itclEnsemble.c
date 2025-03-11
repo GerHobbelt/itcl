@@ -87,10 +87,8 @@ typedef struct EnsembleParser {
     Ensemble* ensData;            /* add parts to this ensemble */
 } EnsembleParser;
 
-static int EnsembleSubCmd(void *clientData, Tcl_Interp *interp,
-        int objc, Tcl_Obj *const objv[]);
-static int EnsembleUnknownCmd(void *dummy, Tcl_Interp *interp,
-    int objc, Tcl_Obj *const objv[]);
+static Tcl_ObjCmdProc EnsembleSubCmd;
+static Tcl_ObjCmdProc EnsembleUnknownCmd;
 
 /*
  *  Forward declarations for the procedures used in this file.
@@ -356,6 +354,52 @@ ensPartFail:
 
     return TCL_ERROR;
 }
+
+#if TCL_MAJOR_VERSION > 8
+
+typedef struct {
+    Tcl_ObjCmdProc2 *objProc;
+    void *clientData;
+    Tcl_CmdDeleteProc *deleteProc;
+} ensInfo;
+
+static int ensCmdProc(
+    void *clientData,
+    Tcl_Interp *interp,
+    int argc,
+    Tcl_Obj *const *objv)
+{
+    ensInfo *info = (ensInfo *)clientData;
+    return info->objProc(info->clientData, interp, argc, objv);
+}
+
+static void ens2DeleteProc(
+    void *clientData)
+{
+    ensInfo *info = (ensInfo *)clientData;
+    if (info->deleteProc != NULL) {
+	info->deleteProc(info->clientData);
+    }
+    ckfree(info);
+}
+
+int
+Itcl_AddEnsemblePart2(
+    Tcl_Interp *interp,            /* interpreter to be updated */
+    const char *ensName,           /* ensemble containing this part */
+    const char *partName,          /* name of the new part */
+    const char *usageInfo,         /* usage info for argument list */
+    Tcl_ObjCmdProc2 *objProc,       /* handling procedure for part */
+    void *clientData,              /* client data associated with part */
+    Tcl_CmdDeleteProc *deleteProc) /* procedure used to destroy client data */
+{
+    ensInfo *info = (ensInfo *)ckalloc(sizeof(ensInfo));
+    info->objProc = objProc;
+    info->clientData = clientData;
+    info->deleteProc = deleteProc;
+    return Itcl_AddEnsemblePart(interp, ensName, partName, usageInfo, ensCmdProc, info, ens2DeleteProc);
+}
+#endif /* TCL_MAJOR_VERSION */
 
 
 /*
@@ -2075,15 +2119,15 @@ CallInvokeEnsembleMethod2(
     int result)
 {
     EnsemblePart *ensPart = (EnsemblePart *)data[0];
-    int objc = PTR2INT(data[1]);
-    Tcl_Obj *const*objv = (Tcl_Obj *const*)data[2];
+    Tcl_Size objc = PTR2INT(data[1]);
+    Tcl_Obj *const *objv = (Tcl_Obj *const*)data[2];
     result = (*ensPart->objProc)(ensPart->clientData, interp, objc, objv);
     return result;
 }
 
 static int
 EnsembleSubCmd(
-    void *clientData,      /* ensPart struct pointer */
+    void *clientData,           /* ensPart struct pointer */
     Tcl_Interp *interp,         /* Current interpreter. */
     int objc,                   /* Number of arguments. */
     Tcl_Obj *const objv[])      /* Argument objects. */
