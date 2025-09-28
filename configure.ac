@@ -19,7 +19,7 @@ dnl	to configure the system for the local environment.
 # so that we create the export library with the dll.
 #-----------------------------------------------------------------------
 
-AC_INIT([itcl],[4.3.3])
+AC_INIT([itcl],[4.3.4])
 
 #--------------------------------------------------------------------
 # Call TEA_INIT as the first TEA_ macro to set up initial vars.
@@ -263,7 +263,7 @@ eval itcl_SRC_DIR="$srcdir"
 itcl_SRC_DIR=`cd "${itcl_SRC_DIR}"; pwd`
 AC_SUBST(itcl_SRC_DIR)
 
-eval itcl_INCLUDE_SPEC="-I${itcl_SRC_DIR}/generic -I${itcl_SRC_DIR}"
+eval itcl_INCLUDE_SPEC=\"\\\"-I${itcl_SRC_DIR}/generic\\\"\"
 AC_SUBST(itcl_INCLUDE_SPEC)
 
 #--------------------------------------------------------------------
