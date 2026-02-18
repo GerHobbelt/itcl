@@ -161,6 +161,7 @@ RootCallProc(
  * ------------------------------------------------------------------------
  */
 
+#if TCL_MAJOR_VERSION > 8
 #ifndef STRINGIFY
 #  define STRINGIFY(x) STRINGIFY1(x)
 #  define STRINGIFY1(x) #x
@@ -218,6 +219,7 @@ static const char version[] = PACKAGE_VERSION "+" STRINGIFY(ITCL_VERSION_UUID)
     ".static"
 #endif
 ;
+#endif /* TCL_MAJOR_VERSION > 8 */
 
 static int
 Initialize (
@@ -234,7 +236,6 @@ Initialize (
     Tcl_Class tclCls;
     Tcl_Object clazzObjectPtr, root;
     Tcl_Obj *objPtr, *resPtr;
-    Tcl_CmdInfo info;
 
     if (Tcl_InitStubs(interp, "8.6-", 0) == NULL) {
 	return TCL_ERROR;
@@ -379,7 +380,7 @@ Initialize (
     if (clazzObjectPtr == NULL) {
 	Tcl_AppendResult(interp,
 		"ITCL: cannot get Object for ::itcl::clazz for class \"",
-		"::itcl::clazz", "\"", NULL);
+		"::itcl::clazz", "\"", (char *)NULL);
 	return TCL_ERROR;
     }
 
@@ -460,16 +461,13 @@ Initialize (
      *  Package is now loaded.
      */
 
-    if (Tcl_GetCommandInfo(interp, "::tcl::build-info", &info)) {
 #if TCL_MAJOR_VERSION > 8
-	if (info.isNativeObjectProc == 2) {
-	    Tcl_CreateObjCommand2(interp, "::itcl::build-info",
-		    info.objProc2, (void *)version, NULL);
-	} else
-#endif
-	Tcl_CreateObjCommand(interp, "::itcl::build-info",
-		info.objProc, (void *)version, NULL);
+    Tcl_CmdInfo info;
+    if (Tcl_GetCommandInfo(interp, "::tcl::build-info", &info)) {
+	Tcl_CreateObjCommand2(interp, "::itcl::build-info",
+		info.objProc2, (void *)version, NULL);
     }
+#endif
     Tcl_PkgProvideEx(interp, "Itcl", ITCL_PATCH_LEVEL, &itclStubs);
     return Tcl_PkgProvideEx(interp, "itcl", ITCL_PATCH_LEVEL, &itclStubs);
 }
@@ -573,7 +571,7 @@ ItclCheckSetItclHull(
 
     if (objc < 3) {
 	Tcl_AppendResult(interp, "ItclCheckSetItclHull wrong # args should be ",
-		"<objectName> <value>", NULL);
+		"<objectName> <value>", (char *)NULL);
 	return TCL_ERROR;
     }
 
@@ -588,7 +586,7 @@ ItclCheckSetItclHull(
 	ioPtr = infoPtr->currIoPtr;
 	if (ioPtr == NULL) {
 	    Tcl_AppendResult(interp, "ItclCheckSetItclHull cannot find object",
-		    NULL);
+		    (char *)NULL);
 	    return TCL_ERROR;
 	}
     }
@@ -597,7 +595,7 @@ ItclCheckSetItclHull(
     Tcl_DecrRefCount(objPtr);
     if (hPtr == NULL) {
 	Tcl_AppendResult(interp, "ItclCheckSetItclHull cannot find itcl_hull",
-		" variable for object \"", Tcl_GetString(objv[1]), "\"", NULL);
+		" variable for object \"", Tcl_GetString(objv[1]), "\"", (char *)NULL);
 	return TCL_ERROR;
     }
     ivPtr = (ItclVariable *)Tcl_GetHashValue(hPtr);
@@ -609,7 +607,7 @@ ItclCheckSetItclHull(
 	    ivPtr->initted = 0;
 	} else {
 	    Tcl_AppendResult(interp, "ItclCheckSetItclHull bad value \"",
-		    valueStr, "\"", NULL);
+		    valueStr, "\"", (char *)NULL);
 	    return TCL_ERROR;
 	}
     }

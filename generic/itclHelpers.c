@@ -11,6 +11,7 @@
  */
 
 #include "itclInt.h"
+#include <limits.h>
 
 void ItclDeleteArgList(ItclArgList *arglistPtr);
 #ifdef ITCL_DEBUG
@@ -126,12 +127,12 @@ ItclCreateArgList(
 		if (commandName != NULL) {
 		    Tcl_AppendResult(interp, "procedure \"",
 			    commandName,
-			    "\" has argument with no name", NULL);
+			    "\" has argument with no name", (char *)NULL);
 		} else {
 		    char buf[TCL_INTEGER_SPACE];
 		    sprintf(buf, "%" TCL_SIZE_MODIFIER "d", i);
 		    Tcl_AppendResult(interp, "argument #", buf,
-			    " has no name", NULL);
+			    " has no name", (char *)NULL);
 		}
 		ckfree((char *) defaultArgv);
 		result = TCL_ERROR;
@@ -141,7 +142,7 @@ ItclCreateArgList(
 		Tcl_AppendStringsToObj(Tcl_GetObjResult(interp),
 		    "too many fields in argument specifier \"",
 		    argv[i], "\"",
-		    NULL);
+		    (char *)NULL);
 		ckfree((char *) defaultArgv);
 		result = TCL_ERROR;
 		break;
@@ -149,7 +150,7 @@ ItclCreateArgList(
 	    if (strstr(defaultArgv[0],"::")) {
 		Tcl_AppendStringsToObj(Tcl_GetObjResult(interp),
 			"bad argument name \"", defaultArgv[0], "\"",
-			NULL);
+			(char *)NULL);
 		ckfree((char *) defaultArgv);
 		result = TCL_ERROR;
 		break;
@@ -355,6 +356,22 @@ ItclEnsembleSubCmd(
     return result;
 }
 
+int
+ItclEnsembleSubCmd2(
+    void *dummy,
+    Tcl_Interp *interp,
+    const char *ensembleName,
+    Tcl_Size objc,
+    Tcl_Obj *const *objv,
+    const char *functionName)
+{
+    if ((size_t)objc - 1 > (size_t)INT_MAX) {
+        Tcl_WrongNumArgs(interp, 1, objv, "?args?");
+        return TCL_ERROR;
+    }
+    return ItclEnsembleSubCmd(dummy, interp, ensembleName, (int)objc, objv, functionName);
+}
+
 
 /*
  * ------------------------------------------------------------------------
@@ -391,7 +408,7 @@ DeleteClassDictInfo(
 
     dictPtr = Tcl_GetVar2Ex(interp, varName, NULL, 0);
     if (dictPtr == NULL) {
-	Tcl_AppendResult(interp, "cannot get dict ", varName, NULL);
+	Tcl_AppendResult(interp, "cannot get dict ", varName, (char *)NULL);
 	return TCL_ERROR;
     }
     keyPtr = iclsPtr->fullNamePtr;
@@ -460,14 +477,14 @@ ItclAddClassesDictInfo(
     if (! found) {
 	Tcl_AppendResult(interp, "ItclAddClassesDictInfo bad class ",
 		"type for class \"", Tcl_GetString(iclsPtr->fullNamePtr),
-		"\"", NULL);
+		"\"", (char *)NULL);
 	return TCL_ERROR;
     }
     dictPtr = Tcl_GetVar2Ex(interp,
 	     ITCL_NAMESPACE"::internal::dicts::classes", NULL, 0);
     if (dictPtr == NULL) {
 	Tcl_AppendResult(interp, "cannot get dict ", ITCL_NAMESPACE,
-		"::internal::dicts::classes", NULL);
+		"::internal::dicts::classes", (char *)NULL);
 	return TCL_ERROR;
     }
     if (Tcl_DictObjGet(interp, dictPtr, keyPtr1, &valuePtr1) != TCL_OK) {
@@ -574,14 +591,14 @@ ItclDeleteClassesDictInfo(
     if (! found) {
 	Tcl_AppendResult(interp, "ItclDeleteClassesDictInfo bad class ",
 		"type for class \"", Tcl_GetString(iclsPtr->fullNamePtr),
-		"\"", NULL);
+		"\"", (char *)NULL);
 	return TCL_ERROR;
     }
     dictPtr = Tcl_GetVar2Ex(interp,
 	     ITCL_NAMESPACE"::internal::dicts::classes", NULL, 0);
     if (dictPtr == NULL) {
 	Tcl_AppendResult(interp, "cannot get dict ", ITCL_NAMESPACE,
-		"::internal::dicts::classes", NULL);
+		"::internal::dicts::classes", (char *)NULL);
 	return TCL_ERROR;
     }
     if (Tcl_DictObjGet(interp, dictPtr, keyPtr, &valuePtr) != TCL_OK) {
@@ -637,7 +654,7 @@ ItclAddObjectsDictInfo(
 	     ITCL_NAMESPACE"::internal::dicts::objects", NULL, 0);
     if (dictPtr == NULL) {
 	Tcl_AppendResult(interp, "cannot get dict ", ITCL_NAMESPACE,
-		"::internal::dicts::objects", NULL);
+		"::internal::dicts::objects", (char *)NULL);
 	return TCL_ERROR;
     }
     keyPtr1 = Tcl_NewStringObj("instances", TCL_INDEX_NONE);
@@ -722,7 +739,7 @@ ItclDeleteObjectsDictInfo(
 	     ITCL_NAMESPACE"::internal::dicts::objects", NULL, 0);
     if (dictPtr == NULL) {
 	Tcl_AppendResult(interp, "cannot get dict ", ITCL_NAMESPACE,
-		"::internal::dicts::objects", NULL);
+		"::internal::dicts::objects", (char *)NULL);
 	return TCL_ERROR;
     }
     keyPtr1 = Tcl_NewStringObj("instances", TCL_INDEX_NONE);
@@ -783,7 +800,7 @@ ItclAddOptionDictInfo(
 	     ITCL_NAMESPACE"::internal::dicts::classOptions", NULL, 0);
     if (dictPtr == NULL) {
 	Tcl_AppendResult(interp, "cannot get dict ", ITCL_NAMESPACE,
-		"::internal::dicts::classOptions", NULL);
+		"::internal::dicts::classOptions", (char *)NULL);
 	return TCL_ERROR;
     }
     keyPtr = iclsPtr->fullNamePtr;
@@ -909,7 +926,7 @@ ItclAddDelegatedOptionDictInfo(
 	     NULL, 0);
     if (dictPtr == NULL) {
 	Tcl_AppendResult(interp, "cannot get dict ", ITCL_NAMESPACE,
-		"::internal::dicts::classDelegatedOptions", NULL);
+		"::internal::dicts::classDelegatedOptions", (char *)NULL);
 	return TCL_ERROR;
     }
     if (Tcl_DictObjGet(interp, dictPtr, keyPtr, &valuePtr1) != TCL_OK) {
@@ -1012,7 +1029,7 @@ ItclAddClassComponentDictInfo(
 	     NULL, 0);
     if (dictPtr == NULL) {
 	Tcl_AppendResult(interp, "cannot get dict ", ITCL_NAMESPACE,
-		"::internal::dicts::classComponents", NULL);
+		"::internal::dicts::classComponents", (char *)NULL);
 	return TCL_ERROR;
     }
     if (Tcl_DictObjGet(interp, dictPtr, keyPtr, &valuePtr1) != TCL_OK) {
@@ -1104,7 +1121,7 @@ ItclAddClassVariableDictInfo(
 	     NULL, TCL_GLOBAL_ONLY);
     if (dictPtr == NULL) {
 	Tcl_AppendResult(interp, "cannot get dict ", ITCL_NAMESPACE,
-		"::internal::dicts::classVariables", NULL);
+		"::internal::dicts::classVariables", (char *)NULL);
 	return TCL_ERROR;
     }
     if (Tcl_DictObjGet(interp, dictPtr, keyPtr, &valuePtr1) != TCL_OK) {
@@ -1255,7 +1272,7 @@ ItclAddClassFunctionDictInfo(
 	     NULL, TCL_GLOBAL_ONLY);
     if (dictPtr == NULL) {
 	Tcl_AppendResult(interp, "cannot get dict ", ITCL_NAMESPACE,
-		"::internal::dicts::classFunctions", NULL);
+		"::internal::dicts::classFunctions", (char *)NULL);
 	return TCL_ERROR;
     }
     keyPtr = iclsPtr->fullNamePtr;

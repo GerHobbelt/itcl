@@ -80,7 +80,7 @@
 #   endif
 #endif
 
-#if TCL_MAJOR_VERSION == 8 && defined(TCL_MINOR_VERSION) && TCL_MINOR_VERSION < 7
+#if TCL_MAJOR_VERSION < 9
 # define TCL_SIZE_MODIFIER ""
 #endif
 
@@ -684,7 +684,8 @@ MODULE_SCOPE void ItclShowArgs(int level, const char *str, size_t objc,
 MODULE_SCOPE Tcl_ObjCmdProc ItclCallCCommand;
 MODULE_SCOPE Tcl_ObjCmdProc ItclObjectUnknownCommand;
 MODULE_SCOPE int ItclCheckCallProc(void *clientData, Tcl_Interp *interp,
-	Tcl_ObjectContext contextPtr, Tcl_CallFrame *framePtr, int *isFinished);
+	Tcl_ObjectContext context, Tcl_CallFrame *framePtr, int *isFinished);
+
 
 MODULE_SCOPE void ItclPreserveClass(ItclClass *iclsPtr);
 MODULE_SCOPE void ItclReleaseClass(void *iclsPtr);
@@ -848,4 +849,4 @@ MODULE_SCOPE ItclRootMethodProc ItclInfoGuts;
  * Include all the private API, generated from itcl.decls.
  */
 
-#include "itclIntDecls.h"
+#include "itclIntDecls.h"  /* IWYU pragma: export */
